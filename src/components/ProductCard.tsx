@@ -13,9 +13,10 @@ interface ProductCardProps {
             count: number;
         };
     };
+    onAddToCart: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
     return (
         <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group flex flex-col h-full">
             <div className="relative aspect-square p-6 overflow-hidden bg-gray-50 flex items-center justify-center">
@@ -52,7 +53,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                     <span className="text-2xl font-black text-gray-900">
                         ${product.price.toFixed(2)}
                     </span>
-                    <button className="bg-gray-900 text-white p-2 px-4 rounded-xl hover:bg-indigo-600 transition-colors duration-300 font-semibold group-hover:shadow-lg">
+                    <button
+                        onClick={onAddToCart}
+                        className="bg-gray-900 text-white p-2 px-4 rounded-xl hover:bg-indigo-600 transition-colors duration-300 font-semibold group-hover:shadow-lg"
+                    >
                         Add to Cart
                     </button>
                 </div>

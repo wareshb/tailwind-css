@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import ProductCard from './components/ProductCard'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import CartDrawer from './components/CartDrawer'
 
 interface Product {
   id: number;
@@ -17,6 +18,10 @@ interface Product {
   };
 }
 
+interface CartItem extends Product {
+  quantity: number;
+}
+
 const Home: React.FC<{
   loading: boolean;
   error: string | null;
@@ -28,6 +33,7 @@ const Home: React.FC<{
   maxPrice: number;
   setMaxPrice: (val: number) => void;
   categories: string[];
+  onAddToCart: (product: Product) => void;
 }> = ({
   loading,
   error,
@@ -38,7 +44,8 @@ const Home: React.FC<{
   setSelectedCategory,
   maxPrice,
   setMaxPrice,
-  categories
+  categories,
+  onAddToCart
 }) => (
     <main className="max-w-7xl mx-auto px-4 py-12">
       <div className="mb-12 text-center border-b border-gray-100 pb-12">
@@ -154,7 +161,7 @@ const Home: React.FC<{
         <>
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+              {filteredProducts.map((product) => <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} />)}
             </div>
           ) : (
             <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
@@ -174,6 +181,8 @@ const Home: React.FC<{
 
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -205,6 +214,31 @@ function App() {
     fetchData();
   }, []);
 
+  const addToCart = (product: Product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const updateQuantity = (id: number, delta: number) => {
+    setCart(prevCart => prevCart.map(item =>
+      item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+    ));
+  };
+
+  const removeFromCart = (id: number) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== id));
+  };
+
+  const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
+
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
@@ -224,22 +258,28 @@ function App() {
               <h1 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">ModernStore</h1>
             </Link>
             <nav className="hidden md:flex items-center gap-6 font-bold text-gray-600">
+              <Link to="/" className="hover:text-indigo-600 transition-colors">Home</Link>
               <Link to="/" className="hover:text-indigo-600 transition-colors">Shop</Link>
               <Link to="/login" className="hover:text-indigo-600 transition-colors">Login</Link>
               <Link to="/signup" className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">Sign Up</Link>
             </nav>
-            <button className="relative p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
+            <button
+              onClick={() => setIsCartOpen(true)}
+              className="relative p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+            >
               <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
-              <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">0</span>
+              <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full ring-2 ring-white">
+                {cartItemsCount}
+              </span>
             </button>
           </div>
         </header>
       )}
 
       <Routes>
-        <Route path="/" element={<Home loading={loading} error={error} filteredProducts={filteredProducts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} maxPrice={maxPrice} setMaxPrice={setMaxPrice} categories={categories} />} />
+        <Route path="/" element={<Home loading={loading} error={error} filteredProducts={filteredProducts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} maxPrice={maxPrice} setMaxPrice={setMaxPrice} categories={categories} onAddToCart={addToCart} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       </Routes>
@@ -262,6 +302,14 @@ function App() {
           <span>&larr;</span> Back to Shop
         </Link>
       )}
+
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        items={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemove={removeFromCart}
+      />
     </div>
   );
 }
