@@ -4,6 +4,16 @@ import ProductCard from './components/ProductCard'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import CartDrawer from './components/CartDrawer'
+import ProductDetails from './pages/ProductDetails'
+
+// Scroll to top on route change component
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
 interface Product {
   id: number;
@@ -250,6 +260,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-900 overflow-x-hidden">
+      <ScrollToTop />
       {!isAuthPage && (
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
           <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
@@ -282,6 +293,7 @@ function App() {
         <Route path="/" element={<Home loading={loading} error={error} filteredProducts={filteredProducts} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} maxPrice={maxPrice} setMaxPrice={setMaxPrice} categories={categories} onAddToCart={addToCart} />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/product/:id" element={<ProductDetails products={products} onAddToCart={addToCart} />} />
       </Routes>
 
       {!isAuthPage && (

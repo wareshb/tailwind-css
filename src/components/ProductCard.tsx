@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Link } from 'react-router-dom';
+
 interface ProductCardProps {
     product: {
         id: number;
@@ -19,7 +21,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
     return (
         <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 group flex flex-col h-full">
-            <div className="relative aspect-square p-6 overflow-hidden bg-gray-50 flex items-center justify-center">
+            <Link to={`/product/${product.id}`} className="relative aspect-square p-6 overflow-hidden bg-gray-50 flex items-center justify-center cursor-pointer">
                 <img
                     src={product.image}
                     alt={product.title}
@@ -30,7 +32,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
                         {product.category}
                     </span>
                 </div>
-            </div>
+            </Link>
 
             <div className="p-6 flex flex-col flex-grow">
                 <div className="flex items-center gap-1 mb-2 text-yellow-400">
@@ -41,9 +43,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
                     <span className="text-xs text-gray-400 ml-1">({product.rating.count})</span>
                 </div>
 
-                <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
-                    {product.title}
-                </h3>
+                <Link to={`/product/${product.id}`} className="cursor-pointer">
+                    <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                        {product.title}
+                    </h3>
+                </Link>
 
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow">
                     {product.description}
@@ -54,7 +58,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
                         ${product.price.toFixed(2)}
                     </span>
                     <button
-                        onClick={onAddToCart}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onAddToCart();
+                        }}
                         className="bg-gray-900 text-white p-2 px-4 rounded-xl hover:bg-indigo-600 transition-colors duration-300 font-semibold group-hover:shadow-lg"
                     >
                         Add to Cart
